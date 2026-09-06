@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+
+# PROBE outputs (large, machine-specific)
+results/
+
+# Node (temporary OpenSpec runtime)
+node_modules/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Secrets
+.env

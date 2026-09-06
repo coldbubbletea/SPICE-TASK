@@ -1,0 +1,37 @@
+## Purpose
+
+Let a user repair their own local code from a bug description: select a workspace directory, describe the bug, optionally supply test commands, and receive a patch with before/after verification — without any benchmark data.
+
+## ADDED Requirements
+
+### Requirement: Workspace selection
+The system SHALL accept a local directory as the target workspace and validate that it exists and is readable before accepting a repair job.
+
+#### Scenario: Valid workspace
+- **WHEN** the user submits an existing directory path as workspace
+- **THEN** the job is accepted and a sandboxed copy of the workspace is created for modification
+
+#### Scenario: Invalid workspace
+- **WHEN** the user submits a path that does not exist or is not a directory
+- **THEN** the job is rejected with a clear error and nothing is modified
+
+### Requirement: Bug description input
+The system SHALL require a free-text bug description as the primary input for an ad-hoc repair job.
+
+#### Scenario: Description drives probing
+- **WHEN** an ad-hoc job runs
+- **THEN** Agent A generates invariant probes from the bug description and the workspace contents, not from benchmark task data
+
+### Requirement: Optional user tests
+The system SHALL allow the user to attach their own test commands or test files that are executed before and after repair.
+
+#### Scenario: Before/after comparison
+- **WHEN** a job includes user test commands
+- **THEN** results report both the pre-repair and post-repair outcomes of those commands
+
+### Requirement: Patch delivery
+On completion, the system SHALL provide the produced patch as a downloadable diff and keep the original workspace untouched.
+
+#### Scenario: Downloadable patch
+- **WHEN** an ad-hoc job finishes
+- **THEN** the user can download a unified diff of all changes made in the sandbox copy
