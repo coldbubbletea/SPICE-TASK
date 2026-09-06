@@ -22,6 +22,17 @@ The API SHALL report, for a run, each task's current stage and final result once
 - **WHEN** a client requests status for an active run
 - **THEN** it receives per-task stage values (e.g. `probing`, `repairing`, `scoring`, `done`)
 
+### Requirement: API configuration endpoints
+The API SHALL expose GET/PUT for the user's LLM endpoint configuration (base URL, API key, model) and a POST endpoint that tests connectivity with a minimal chat request.
+
+#### Scenario: Save and read config
+- **WHEN** a client PUTs a config with base URL, key, and model
+- **THEN** subsequent GET returns the same values
+
+#### Scenario: Connectivity test
+- **WHEN** a client POSTs to the connection-test endpoint
+- **THEN** it receives `{ok: true}` on success or `{ok: false, error: "..."}` on failure without creating any job
+
 ### Requirement: Artifact endpoint
 The API SHALL serve a task's patch, probe report, and score record by run id and task id.
 

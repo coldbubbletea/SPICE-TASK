@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PROBE Console</title>
+<style>
+  :root {
+    --bg: #0a0e14;
+    --panel: #111823;
+    --panel2: #16202e;
+    --border: #1f2d3d;
+    --text: #d7e1ec;
+    --muted: #6b7f94;
+    --accent: #4fd1c5;
+    --green: #48bb78;
+    --red: #fc8181;
+    --amber: #f6ad55;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'SF Mono',ui-monospace,Menlo,Consolas,monospace; min-height:100vh; }
+  header { display:flex; align-items:center; gap:14px; padding:20px 32px; border-bottom:1px solid var(--border); background:linear-gradient(180deg,#0d131c, #0a0e14); }
+  .logo { width:34px; height:34px; border-radius:8px; background:linear-gradient(135deg,var(--accent),#667eea); display:flex; align-items:center; justify-content:center; font-weight:900; color:#0a0e14; font-size:16px; }
+  h1 { font-size:18px; letter-spacing:.5px; }
+  h1 span { color:var(--accent); }
+  .sub { color:var(--muted); font-size:12px; margin-left:auto; }
+  main { padding:28px 32px; max-width:1200px; margin:0 auto; }
+  .cards { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:26px; }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:16px 18px; }
+  .card .k { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:1px; }
+  .card .v { font-size:26px; margin-top:6px; font-weight:700; }
+  .card .v.green { color:var(--green); }
+  table { width:100%; border-collapse:collapse; background:var(--panel); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  th, td { text-align:left; padding:11px 16px; font-size:13px; }
+  th { color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:1px; border-bottom:1px solid var(--border); background:var(--panel2); }
+  tr + tr td { border-top:1px solid var(--border); }
+  .badge { display:inline-block; padding:2px 10px; border-radius:99px; font-size:11px; font-weight:700; }
+  .badge.ok { background:rgba(72,187,120,.15); color:var(--green); }
+  .badge.fail { background:rgba(252,129,129,.15); color:var(--red); }
+  .bar { display:inline-block; width:90px; height:6px; border-radius:3px; background:#1c2836; vertical-align:middle; margin-right:8px; overflow:hidden; }
+  .bar i { display:block; height:100%; background:var(--accent); border-radius:3px; }
+  .muted { color:var(--muted); }
+  footer { text-align:center; color:var(--muted); font-size:11px; padding:24px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">P</div>
+  <h1>PROBE <span>Console</span></h1>
+  <div class="sub">Proactive Repair via Orchestrated Boundary Enumeration · v0.1.0</div>
+</header>
+<main>
+  <div class="cards" id="cards"></div>
+  <table id="tbl">
+    <thead><tr><th>Task</th><th>Public</th><th>Private</th><th>Status</th><th class="muted">Baseline</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</main>
+<footer>PROBE · SWE-bench Science false-green subset (085–090) · B0 baseline: codex + deepseek-v4-pro</footer>
+<script>
+fetch('/api/results').then(r=>r.json()).then(data=>{
+  const total = data.length;
+  const resolved = data.filter(d=>d.resolved).length;
+  const pubPass = data.reduce((a,d)=>a+d.public_passed,0);
+  const pubTot  = data.reduce((a,d)=>a+d.public_total,0);
+  document.getElementById('cards').innerHTML = `
+    <div class="card"><div class="k">Tasks</div><div class="v">${total}</div></div>
+    <div class="card"><div class="k">Resolved</div><div class="v ${resolved?'green':''}">${resolved}/${total}</div></div>
+    <div class="card"><div class="k">Public pass rate</div><div class="v">${pubTot?Math.round(100*pubPass/pubTot):0}%</div></div>
+    <div class="card"><div class="k">Baseline</div><div class="v" style="font-size:14px;margin-top:12px">B0 vanilla</div></div>`;
+  const tbody = document.querySelector('#tbl tbody');
+  tbody.innerHTML = data.map(d=>{
+    const rate = (d.public_total+d.private_total) ? Math.round(100*(d.public_passed+d.private_passed)/(d.public_total+d.private_total)) : 0;
+    return `<tr>
+      <td><b>${d.task_id}</b></td>
+      <td><span class="bar"><i style="width:${d.public_total?100*d.public_passed/d.public_total:0}%"></i></span>${d.public_passed}/${d.public_total}</td>
+      <td><span class="bar"><i style="width:${d.private_total?100*d.private_passed/d.private_total:0}%"></i></span>${d.private_passed}/${d.private_total}</td>
+      <td><span class="badge ${d.resolved?'ok':'fail'}">${d.resolved?'RESOLVED':'FAILED'}</span></td>
+      <td class="muted">${d.baseline}</td>
+    </tr>`;
+  }).join('');
+}).catch(e=>{ document.getElementById('cards').innerHTML = `<div class="card"><div class="k">Error</div><div class="v" style="color:var(--red);font-size:14px">${e}</div></div>`; });
+</script>
+</body>
+</html>

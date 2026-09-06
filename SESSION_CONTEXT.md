@@ -1,129 +1,103 @@
-# PROBE 项目 — 会话上下文 (2026-09-06)
+# PROBE 项目 — 会话上下文 (2026-09-06, 第三轮更新)
 
-> **给下一个 session 的 agent**: 读完这个文件 + `/home/satoru/swe-shunyu/notes.md` 即可接上所有工作。
-
----
-
-## 当前状态（2026-09-06 第二轮）
-
-用户要搭 PROBE，决定用 **OpenSpec** (Fission-AI) scaffold。**已完成 OpenSpec 接入 + 首个 change 规划**。
-
-### 本轮完成
-- [x] 装好 OpenSpec CLI：`@fission-ai/openspec@1.12.0`（系统 Node 是 v18，OpenSpec 需 ≥20；用临时 **Node v22** 装的）
-    - Node v22 解压在 `/tmp/node-v22.23.2-linux-x64/`（/tmp 可能被清，重装见下）
-    - openspec 装在用户 npm prefix：`/home/satoru/.npm-global/bin/openspec`
-- [x] `openspec init` 成功创建核心结构 `openspec/{config.yaml, specs/, changes/}`（doctor: ok）
-- [x] 建了首个 change **`probe-foundation`**，4/4 artifacts 完成且 `openspec validate` 通过：
-    - `proposal.md` / `design.md` / `tasks.md`
-    - 5 个 capability specs：`task-loading`, `invariant-probing`, `repair-agent`, `experiment-pipeline`, `evaluation-scoring`
-- [ ] **未完成**：Codex skill 安装（`openspec init --tools codex` 的 `.agents/skills` 那步）在本沙箱失败 —— `.agents`/`.codex`/`.git` 是**只读 mountpoint**。不影响规划；只影响 `/opsx:` 自然语言调用。在普通终端跑一次即可补上（见下）。
-
-### 复现命令（如需重装 / 换机器）
-```bash
-# Node ≥20（本机 v18，临时用 v22）
-cd /tmp && curl -sS -O https://nodejs.org/dist/v22.23.2/node-v22.23.2-linux-x64.tar.xz \
-  && tar xf node-v22.23.2-linux-x64.tar.xz
-export PATH=/tmp/node-v22.23.2-linux-x64/bin:$PATH
-npm install -g @fission-ai/openspec@latest   # → ~/.npm-global/bin/openspec
-cd /home/satoru/probe && openspec init --tools codex --language en --profile core
-```
-
-### 下一步（用户明确要求的，按优先级）
-1. **教 VS Code + Codex 用 OpenSpec** —— 本轮已口头讲解；若要在本仓库真正启用 `/opsx:` skill，需在**非沙箱终端**跑 `openspec init --tools codex`（写 `.agents/skills/`），然后重开 Codex。
-2. **实现 PROBE Python 包**：按 `openspec/changes/probe-foundation/tasks.md` 的 8 组任务落地代码（`probe/`, `configs/`, `scripts/`, `tests/`）。
-3. notes.md Part G 待办：087 验证、扩子集、Agent A prompt、跑 B1/B2。
+> **给下一个 session 的 agent**: 读完本文件 + `COMMUNICATION_LOG.md`（完整沟通记录）+ `/home/satoru/swe-shunyu/notes.md`（研究笔记）即可接上全部工作。
+> 所有规划在 `openspec/changes/`，用 `openspec validate <change>` / `openspec status --change <change>` 查看状态。
 
 ---
 
-## PROBE 是什么（一句话）
+## ⚡ 当前进行中的事（重启后第一件事）
 
-Two-agent automated program repair for scientific code:
-- **Agent A (Invariant Prober)**: 先对代码库生成不变量探针/额外测试，暴露 "同一 bug class 多个入口" 的问题
-- **Agent B (Repair Agent)**: 拿着 Agent A 的探针结果做修复
-- **核心假设**: 单 agent 只修它看到的那条路径；PROBE 通过对抗性探针让多条路径都暴露
+**正在 apply `web-console` change**。下一步 = task 1.4：实现 LLM config 端点
+（GET/PUT `/api/config` → 持久化到 `results/config.json`；POST `/api/config/test` → 最小 chat-completion 连通性测试）。
+完成后按 tasks.md 顺序继续：前端 React+TS+Vite（Repair panel hero）→ ad-hoc 接线 → desktop 壳 + CI → 截图 QA。
 
-### Baselines
-| ID | 说明 | 状态 |
-|----|------|------|
-| B0 | Vanilla single-agent (codex+deepseek-v4-pro) | ✅ 已有: 0/6 |
-| B1 | Single-agent + "generate more tests" prompt | 待跑 |
-| B2 | PROBE two-agent (A→B) | 待跑 |
+## 已完成（本轮）
 
-### 实验子集
-SWE-bench Science tasks 085-090（6 题），特征: "public 过 / private 挂"（假绿灯）
+- [x] OpenSpec 接入：CLI v1.12.0（Node v22 临时装在 `/tmp/node-v22.23.2-linux-x64/`，openspec 在 `~/.npm-global/bin/`）
+- [x] Codex skills 装好（用户在自己终端跑的 `openspec init --tools codex`，6 个 skill 在 `.agents/skills/`）
+- [x] GitHub: **私有仓库** `coldbubbletea/PROBE-Proactive-Repair-via-Orchestrated-Boundary-Enumeration`，首 commit `2f5ddbd` 已 push。remote 是干净 URL（token 未落盘）。
+- [x] Change `probe-foundation`: 4/4 artifacts, 19 tasks, validate ✓（PROBE 核心设计，尚未 apply）
+- [x] Change `web-console`: 4/4 artifacts, ~22 tasks, validate ✓（本轮多次 spec 迭代，见下）
+- [x] Web 后端: `probe/web/{server,registry,ingest}.py` + `scripts/run_console.py`
+- [x] Ingestion 验证通过: 真实 B0 数据 6 条（task_085-090, codex+deepseek-v4pro）
+- [x] 临时占位前端 `probe/web/static/index.html`（深色 dashboard，展示真实 B0 数据）
+- [ ] **web-console task 1.4**: LLM config 端点 ← **从这里继续**
 
----
+## web-console spec 迭代历史（用户逐步明确的需求）
 
-## OpenSpec 用法速查（VS Code + Codex）
+1. 漂亮前端 + 一键使用
+2. + ad-hoc: 用户选 workspace + 输入 bug 描述 → 自动修复
+3. + 跨平台客户端，开袋即用（Linux+Windows）→ pywebview + PyInstaller + GH Actions matrix
+4. 前端栈: "世界最流行的生态和栈" → **React 18 + TypeScript + Vite**
+5. + **用户自配 API**（base URL / key / model，连通性测试），核心 UX = 选 workspace → 配 API → 描述 bug → Start（单面板引导式，未就绪禁用 Start）
 
-OpenSpec = spec-driven 工作流。核心目录 `openspec/`：
-- `openspec/specs/<capability>/spec.md` — 已归档的能力规格（系统"应做什么"的行为契约）
-- `openspec/changes/<change-id>/` — 一个 change 的规划包：`proposal.md`(why) + `specs/**`(delta) + `design.md`(how) + `tasks.md`(checklist)
+## ⚠️ 环境约束（必须知道，否则会踩坑）
 
-工作流循环：**explore → propose → apply → archive**
-1. `/opsx:propose <idea>` — AI 生成 change 规划（proposal/specs/design/tasks），人工 review
-2. `/opsx:apply` — 按 tasks.md 逐条实现代码，打勾
-3. `openspec validate <change-id>` — 校验格式
-4. `/opsx:archive` — 归档：delta specs 合并进 `openspec/specs/`，change 移入 `changes/archive/`
-
-**Codex 调用方式**：OpenSpec 把 workflow 装成 skill（`.agents/skills/opsx-*.md`）。在 VS Code Codex prompt 框里用自然语言即可触发，例如：
-- "propose: add the invariant prober" → 走 propose
-- "apply probe-foundation" → 实现该 change
-- （Codex 的 slash 形式是 `$opsx-propose`；CLI 侧用 `openspec <cmd>`）
-
-**关键 CLI**：`openspec init` / `list` / `status --change X` / `show X` / `validate X` / `new change <id>` / `archive X` / `doctor`。
-（本沙箱跑 openspec 要带 PATH：`export PATH=/home/satoru/.npm-global/bin:/tmp/node-v22.23.2-linux-x64/bin:$PATH`）
-
----
-
-## 关键文件位置
-
-| 文件 | 路径 |
+| 约束 | 影响 |
 |------|------|
-| 完整研究笔记 | `/home/satoru/swe-shunyu/notes.md` |
-| 086 详细报告 | `/home/satoru/swe-shunyu/report_task_086.md` |
-| 086 patch (verified) | `/home/satoru/swe-shunyu/task_086.patch` |
-| 087 patch (待验证) | `/home/satoru/swe-shunyu/task_087.patch` |
-| SWE-bench Science 数据 | `/home/satoru/swe-bench-science/` |
-| PROBE 项目 (本目录) | `/home/satoru/probe/` |
-| OpenSpec 规划 | `/home/satoru/probe/openspec/` |
+| **沙箱禁止创建任何 socket** | 活服务器/截图 QA 必须 `require_escalated` 提权在沙箱外跑；TestClient（ASGI 内存传输）可在沙箱内测 API |
+| `.agents` / `.codex` / `.git` = 只读 mountpoint | git 写操作、Codex skill 安装必须提权或用户自己终端跑 |
+| 沙箱内 DNS/网络全断 | curl 外部资源要提权；**沙箱内也连不上沙箱外起的 localhost 服务**（出站被禁）→ 让用户自己浏览器看 |
+| 后台进程随会话结束被杀 | 起持久服务用 `setsid nohup ... < /dev/null &` |
+| **pkill 自杀陷阱** | pkill 模式会匹配到自己的命令行 → 用 `[x]` 技巧（如 `pkill -f 'uvicorn [p]robe'`）或干脆不 pkill，先 `curl health` 探测 |
+| Node v22 在 /tmp（临时目录，可能被清） | openspec 命令要带 PATH: `export PATH=/home/satoru/.npm-global/bin:/tmp/node-v22.23.2-linux-x64/bin:$PATH`；被清了按 COMMUNICATION_LOG §2 重装 |
+| Python = anaconda3 (3.13) | requests/yaml/pytest/fastapi/uvicorn 已装；webview/PySide6 未装（desktop 壳阶段要 `pip install pywebview pyinstaller`） |
 
----
+## 当前运行中的服务
 
-## 环境信息
+- PROBE console: `http://127.0.0.1:8765`（setsid 持久，沙箱外可见；重启机器后需重起:
+  `cd /home/satoru/probe && PROBE_RESULTS=$PWD/results setsid nohup python3 -m uvicorn probe.web.server:app --host 127.0.0.1 --port 8765 > /tmp/probe_server.log 2>&1 < /dev/null &`）
 
-- **Model**: Qwen3.8-27B via Unsloth Studio (local, `http://127.0.0.1:8888/v1`)
-- **系统 Node**: v18（不够）；**OpenSpec 用临时 Node v22**（见复现命令）
-- **Sandbox**: workspace-write；`.agents`/`.codex`/`.git` 为只读 mountpoint（Codex skill 安装需非沙箱终端）
-- **工作目录**: `/home/satoru/probe`
-- **用户语言**: 中文为主，技术术语英文
-
----
-
-## 已讨论但未执行的设计（Python 包，见 tasks.md）
+## 文件地图
 
 ```
-probe/
-├── README.md, requirements.txt, .gitignore
+/home/satoru/probe/                     # git repo (private, origin=GitHub)
+├── SESSION_CONTEXT.md                  # 本文件
+├── COMMUNICATION_LOG.md                # 完整沟通记录（决策+坑）
+├── openspec/                           # OpenSpec 规划
+│   ├── config.yaml
+│   └── changes/
+│       ├── probe-foundation/           # PROBE 核心 (未 apply)
+│       └── web-console/                # Web 控制台 (apply 中, task 1.4 起)
 ├── probe/
-│   ├── pipeline.py          # B0/B1/B2 orchestrator
-│   ├── prober.py            # Agent A: Invariant Prober
-│   ├── repairer.py          # Agent B (B0 vanilla / B1 testgen)
-│   ├── agent_runner.py      # LLM client for local endpoint + preflight
-│   ├── evaluation/scorer.py # F2P/P2P + resolved flag
-│   ├── data/task_loader.py  # SWE-bench Science loader + false-green subset
-│   └── prompts/{prober,repairer,baseline_testgen}.md
-├── configs/{b0_vanilla,b1_testgen,b2_probe}.yaml
-├── scripts/{run_experiment,run_single_task}.py
-├── results/
-└── tests/test_scorer.py
+│   ├── __init__.py
+│   ├── data/ evaluation/ prompts/      # 空目录，probe-foundation apply 时填
+│   └── web/
+│       ├── server.py                   # FastAPI app (已验证: health/results/jobs)
+│       ├── registry.py                 # JobRegistry, JSON 持久化 results/jobs/
+│       ├── ingest.py                   # 扫 jobs root → reward.json/result.json/model.patch
+│       └── static/index.html           # 临时占位前端（React 版会替换）
+├── scripts/run_console.py              # 一键启动 (uvicorn + open browser)
+├── results/                            # .gitignored; jobs/, ingested/
+├── configs/ tests/                     # 空，待填
+└── .agents/skills/                     # OpenSpec Codex skills (6 个)
+
+外部数据:
+/home/satoru/swe-bench-science/jobs/    # B0 历史 jobs (20 roots, 50M) — ingestion 源
+/home/satoru/swe-shunyu/notes.md        # 研究笔记 (PROBE 设计、086/087 案例)
 ```
 
----
+## 技术栈（最终确认，用户拍板）
 
-## 用户风格偏好
+| 层 | 选型 |
+|----|------|
+| Frontend | **React 18 + TypeScript + Vite**（"世界最流行的生态和栈"） |
+| Backend | FastAPI + uvicorn (Python 3.13) |
+| Desktop | pywebview + PyInstaller → zip 开袋即用 (Win amd64 + Linux x86_64) |
+| CI | GitHub Actions matrix |
+| LLM | **用户自配 API**（默认建议本地 Qwen3.8-27B @ http://127.0.0.1:8888/v1） |
+| Data | SWE-bench Science 085-090 (false-green subset) |
 
-- 简洁直接，中文为主
-- 喜欢 emoji 点缀（🐦💪）
-- 论文目标: 4 页 report (Motivation → RQ+Method → Setup → Results → Limitations)
-- 项目代号: **PROBE**（不是 PRISM）
+## GitHub token 状态
+
+- 旧 fine-grained token: 无仓库权限，已无用，建议 revoke
+- classic token (`ghp_NeDOSo...`): 有效 + push 权限；**只在对话里出现过，未写入任何文件**。push 成功后可 revoke，或保留备用（下次 push 需要时向用户要）
+
+## 用户偏好
+
+- 中文为主，技术术语英文；emoji 点缀（🐦💪）
+- **每步都要过 spec**（"必须每一步都通过spec"）——改行为先改 openspec specs 并 validate，再实现
+- 选型优先世界主流/生态大小
+- 开袋即用 > 开发者友好；研究工具也要产品级 UI
+- 回复要简洁直接（但关键决策要讲清理由）
+- 论文目标: 4 页 report；console 截图可当 figure

@@ -8,7 +8,8 @@ PROBE is currently a CLI-only research harness. We want a web console where a us
 - Add a single-page frontend (vanilla HTML/CSS/JS, no build step) with a dark "lab" aesthetic: overview dashboard, run launcher, live progress, per-task detail views.
 - Add an **ad-hoc repair mode**: the user selects a local code workspace (directory), writes a bug description, optionally adds their own test commands; PROBE runs probing + repair against it and returns a patch plus before/after test results.
 - Add an ingestion layer that imports existing SWE-bench Science job artifacts (`reward.json`, `ctrf.json`, `result.json`, `model.patch`) so historical B0 runs appear immediately.
-- One-click usage: a single command starts the server and opens the browser at the console.
+- Add a desktop shell (pywebview window embedding the console) packaged with PyInstaller into out-of-the-box archives for Windows (amd64) and Linux (x86_64), built by GitHub Actions.
+- One-click usage: users unzip a release archive and double-click `PROBE` — no Python/Node install; a single command (`scripts/run_console.py`) also works for developers.
 
 ## Capabilities
 
@@ -17,6 +18,7 @@ PROBE is currently a CLI-only research harness. We want a web console where a us
 - `experiment-api`: JSON API for launching runs (baseline + benchmark tasks or ad-hoc workspace/bug jobs) and polling status/artifacts.
 - `result-ingestion`: Import existing job directories (reward/ctrf/result/patch) into the console's result store.
 - `ad-hoc-repair`: Repair a user-supplied local workspace from a bug description, with optional user-provided test commands and before/after comparison.
+- `desktop-shell`: Out-of-the-box Windows/Linux desktop app (unzip-and-run) wrapping the console with an embedded server.
 
 ### Modified Capabilities
 <!-- none -->
