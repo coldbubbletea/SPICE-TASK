@@ -1,0 +1,29 @@
+{
+  "sci": {
+    "available": false,
+    "patch": "",
+    "verify": {
+      "ok": false,
+      "probe_results": [],
+      "summary": "sci 通道未运行（仅启用 ds 通道）"
+    }
+  },
+  "general": {
+    "available": false,
+    "patch": "",
+    "verify": {
+      "ok": false,
+      "probe_results": [],
+      "summary": "general 通道未运行（仅启用 ds 通道）"
+    }
+  },
+  "ds": {
+    "available": false,
+    "patch": "diff --git a/source/package/MDAnalysis/transformations/nojump.py b/source/package/MDAnalysis/transformations/nojump.py\nindex adfa24e..89974e4 100644\n--- a/source/package/MDAnalysis/transformations/nojump.py\n+++ b/source/package/MDAnalysis/transformations/nojump.py\n@@ -124,9 +124,25 @@ class NoJump(TransformationBase):\n             msg = f\"Periodic box dimensions are not invertible at step {ts.frame}\"\n             raise NoDataError(msg)\n         if self.prev is None:\n-            self.prev = ts.positions @ Linverse\n+            # Anchor on the current frame's unwrapped coordinates. The\n+            # unwrapped reference point is a Cartesian position: reducing it\n+            # with the current frame's cell matrix later on keeps the\n+            # recurrence free of basis mismatches when the cell changes.\n+            self.prev = ts.positions.copy()\n             self.old_frame = ts.frame\n             return ts\n+        if self.check_c and self.old_frame == ts.frame:\n+            # The already-transformed frame is being read again (e.g.\n+            # ``add_transformations`` applies the transform once to the\n+            # loaded frame and the reader then yields that frame again on\n+            # the first iteration). Recompute the unwrapped positions from\n+            # the anchor without touching the continuity bookkeeping, so the\n+            # re-read is a no-op instead of looking like an unequal-interval\n+            # jump that resets the anchor onto wrapped coordinates.\n+            fcurrent = ts.positions @ Linverse\n+            fprev = self.prev @ Linverse\n+            ts.positions = (fcurrent - np.round(fcurrent - fprev)) @ L\n+            return ts\n         if (\n             self.check_c\n             and self.older_frame != \"A\"\n@@ -137,7 +153,7 @@ class NoJump(TransformationBase):\n                 \"We are resetting the reference frame to the current timestep.\",\n                 UserWarning,\n             )\n-            self.prev = ts.positions @ Linverse\n+            self.prev = ts.positions.copy()\n             self.old_frame = ts.frame\n             self.older_frame = \"A\"\n             return ts\n@@ -152,7 +168,10 @@ class NoJump(TransformationBase):\n             )\n         # Convert into reduced coordinate space\n         fcurrent = ts.positions @ Linverse\n-        fprev = self.prev  # Previous unwrapped coordinates in reduced box coordinates.\n+        # The previous unwrapped Cartesian coordinates, reduced with the\n+        # current frame's cell matrix, so both operands of the difference\n+        # below live in the same (current) reduced-coordinate basis.\n+        fprev = self.prev @ Linverse\n         # Calculate the new positions in reduced coordinate space (Equation B6 from\n         # 10.1021/acs.jctc.2c00327). As it turns out, the displacement term can\n         # be moved inside the round function in this coordinate space, as the\n@@ -160,8 +179,10 @@ class NoJump(TransformationBase):\n         newpositions = fcurrent - np.round(fcurrent - fprev)\n         # Convert back into real space\n         ts.positions = newpositions @ L\n-        # Set things we need to save for the next frame.\n-        self.prev = newpositions  # Note that this is in reduced coordinate space.\n+        # Set things we need to save for the next frame. Keep the unwrapped\n+        # reference point in Cartesian space (copy: ``ts.positions`` is a\n+        # shared buffer that the reader rewrites for every frame).\n+        self.prev = ts.positions.copy()\n         self.older_frame = self.old_frame\n         self.old_frame = ts.frame\n",
+    "verify": {
+      "ok": false,
+      "probe_results": [],
+      "summary": "捕获的 diff 未通过 git apply --check（patcher 编辑可能被截断）"
+    }
+  }
+}

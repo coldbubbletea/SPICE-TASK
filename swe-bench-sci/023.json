@@ -1,0 +1,91 @@
+{
+  "task": "023",
+  "note": "【强制·2026-09-16 用户强覆盖】本文件是 task 023 角色→模型/提供商/密钥的唯一配置源。角色规则：prober = Codex CLI harness + DeepSeek flash（deepseek-chat，走 codex exec 分支，providers.deepseek-flash 不设 harness/claudeBaseUrl）；★ 本次与 063/115 的差异：prober 的 thinking 开到 max（providers.deepseek-flash.reasoningEffort = \"max\"，原为 medium），并给 prober 30 分钟出探针（--probe-timeout-min 30）；patcher = Claude Code harness + DeepSeek pro（deepseek-v4-pro + --effort max，providers.deepseek，claudeBaseUrl=https://api.deepseek.com/anthropic）。key 解析顺序：进程环境变量（provider.envKey）> 本文件 roles.<role>.key；缺任何角色 key 时 run-dual-075.js 以退出码 2 拒绝启动（fail-fast）。离线硬约束：禁用 WebSearch/WebFetch，禁止查上游仓库/issue/PR/他人补丁，禁止读历史 run 产物当答案；prober/patcher 均不得读 private test / verifier 镜像（本机在 agent 运行期不保留 verifier 镜像）。",
+  "providers": {
+    "deepseek": {
+      "name": "DeepSeek",
+      "baseUrl": "https://api.deepseek.com",
+      "wireApi": "responses",
+      "envKey": "DEEPSEEK_API_KEY",
+      "id": "deepseek",
+      "model": "deepseek-v4-pro",
+      "reasoningEffort": "max",
+      "note": "Claude Code harness（harness=claude，claude CLI -p + --effort max）+ deepseek-v4-pro；端点走 claudeBaseUrl（Anthropic 兼容）",
+      "harness": "claude",
+      "claudeBaseUrl": "https://api.deepseek.com/anthropic",
+      "effort": "max"
+    },
+    "local-qwen": {
+      "name": "Local Qwen",
+      "baseUrl": "http://localhost:8040/v1",
+      "wireApi": "responses",
+      "envKey": "LOCAL_API_KEY",
+      "id": "local-qwen"
+    },
+    "moonshot": {
+      "name": "Moonshot (Kimi)",
+      "baseUrl": "https://api.moonshot.cn/v1",
+      "wireApi": "responses",
+      "envKey": "MOONSHOT_API_KEY",
+      "id": "moonshot"
+    },
+    "siliconflow": {
+      "name": "SiliconFlow (GLM)",
+      "baseUrl": "http://127.0.0.1:8050/v1",
+      "wireApi": "responses",
+      "envKey": "SILICONFLOW_API_KEY",
+      "id": "siliconflow"
+    },
+    "deepseek-flash": {
+      "name": "DeepSeek (flash)",
+      "baseUrl": "https://api.deepseek.com",
+      "wireApi": "responses",
+      "envKey": "DEEPSEEK_API_KEY",
+      "id": "deepseek-flash",
+      "model": "deepseek-chat",
+      "reasoningEffort": "max",
+      "note": "prober 通道：Codex CLI（codex exec --json）+ deepseek-chat + ★thinking max（本次 023 用户指定，原 medium）；不设 harness/claudeBaseUrl，让 runner 走 codex 分支。"
+    }
+  },
+  "roles": {
+    "tester": {
+      "model": "deepseek-chat",
+      "provider": "deepseek-flash",
+      "key": "",
+      "note": "prober ds 通道（Codex CLI + deepseek-chat + thinking max + 30min 探针预算）——假设优先决策层（§37-§40）"
+    },
+    "domain-invariant": {
+      "model": "deepseek-v4-pro",
+      "provider": "deepseek",
+      "key": "",
+      "note": "硬改(2026-09-14): 原 qwen3.8-27b-nvfp4@local-qwen → claude code + deepseek-v4-pro + thinking max"
+    },
+    "repair": {
+      "model": "deepseek-v4-pro",
+      "provider": "deepseek",
+      "key": "",
+      "note": "硬改(2026-09-14): 原 zai-org/GLM-5.2@siliconflow → claude code + deepseek-v4-pro + thinking max"
+    },
+    "mentor": {
+      "model": "deepseek-v4-pro",
+      "provider": "deepseek",
+      "key": "",
+      "note": "硬改(2026-09-14): 原 kimi-k3@moonshot → claude code + deepseek-v4-pro + thinking max"
+    },
+    "kimi": {
+      "model": "deepseek-chat",
+      "provider": "deepseek-flash",
+      "key": "",
+      "note": "prober 备用通道，未启用（--only-roles ds 时跳过执行，仅参与 preflight key 校验）"
+    },
+    "ds": {
+      "model": "deepseek-v4-pro",
+      "provider": "deepseek",
+      "key": "",
+      "note": "★ patcher 实际通道（2026-09-16）：Claude Code + DeepSeek pro（deepseek-v4-pro + --effort max），严格按 prober 指引出 patch"
+    }
+  },
+  "mentorMaxRegenRounds": 0,
+  "timeBudget": "prober(ds flash / Codex，thinking max) 30min 强制交卷（--probe-timeout-min 30）；patcher(DeepSeek pro max / Claude Code) 按 --repair-timeout-min 交卷；ds-only 流程无 mentor",
+  "blockingPolicy": "non-blocking：prober 产出假设图 + kill line；patcher 必须按指引先验 rank-1 假设并用同一条 kill line 复测，产物 candidate-ds.diff 直接进 docker verifier 判分"
+}

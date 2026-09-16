@@ -1,0 +1,50 @@
+{
+  "ok": false,
+  "probe_results": [
+    {
+      "probe_id": "p1",
+      "title": "Changing orthorhombic cell: unwrapped x must stay a lattice image of the physical path (public fixture cell_schedule_a)",
+      "passed": true,
+      "output": "[p1] x=[97.5, 97.5, 97.5, 97.5] maxstep=0.000 half_min_box=47.5 warns=1\n[p1] advisory: warnings on strictly sequential schedule = 1\n[p1] RESULT=OK\n\n/tmp/venv-023-probe/lib/python3.12/site-packages/Bio/Application/__init__.py:39: BiopythonDeprecationWarning: The Bio.Application modules and modules relying on it have been deprecated.\n\nDue to the on going maintenance burden of keeping command line application\nwrappers up to date, we have decided to deprecate and eventually remove these\nmodules.\n\nWe instead now recommend building your command line and invoking it directly\nwith the subprocess module.\n  warnings.warn("
+    },
+    {
+      "probe_id": "p2",
+      "title": "Schedule invariance: the same physical motion under two valid frame schedules must give the same unwrapped coordinates",
+      "passed": true,
+      "output": "[p2] schedule_a x=[97.5, 97.5, 97.5, 97.5] maxstep=0.000\n[p2] schedule_b x=[97.5, 97.5, 97.5, 97.5] maxstep=0.000\n[p2] RESULT=OK\n\n/tmp/venv-023-probe/lib/python3.12/site-packages/Bio/Application/__init__.py:39: BiopythonDeprecationWarning: The Bio.Application modules and modules relying on it have been deprecated.\n\nDue to the on going maintenance burden of keeping command line application\nwrappers up to date, we have decided to deprecate and eventually remove these\nmodules.\n\nWe instead now recommend building your command line and invoking it directly\nwith the subprocess module.\n  warnings.warn("
+    },
+    {
+      "probe_id": "p3",
+      "title": "check_continuity=False must still not convert a cell-size change into atomic motion (shrink 100->10 and grow 10->100)",
+      "passed": true,
+      "output": "[p3] shrink_100_10 x=[9.0, 9.0] (expected [9.0, 9.0])\n[p3] grow_10_100 x=[9.0, 9.0] (expected [9.0, 9.0])\n[p3] RESULT=OK\n\n/tmp/venv-023-probe/lib/python3.12/site-packages/Bio/Application/__init__.py:39: BiopythonDeprecationWarning: The Bio.Application modules and modules relying on it have been deprecated.\n\nDue to the on going maintenance burden of keeping command line application\nwrappers up to date, we have decided to deprecate and eventually remove these\nmodules.\n\nWe instead now recommend building your command line and invoking it directly\nwith the subprocess module.\n  warnings.warn("
+    },
+    {
+      "probe_id": "p4",
+      "title": "Equivalent array notations ('fac' vs 'afc') must yield the same unwrapped frames (notation invariance + absolute anchor)",
+      "passed": true,
+      "output": "[p4] order=fac x=[97.5, 97.5, 97.5, 97.5]\n[p4] order=afc x=[97.5, 97.5, 97.5, 97.5]\n[p4] RESULT=OK\n\n/tmp/venv-023-probe/lib/python3.12/site-packages/Bio/Application/__init__.py:39: BiopythonDeprecationWarning: The Bio.Application modules and modules relying on it have been deprecated.\n\nDue to the on going maintenance burden of keeping command line application\nwrappers up to date, we have decided to deprecate and eventually remove these\nmodules.\n\nWe instead now recommend building your command line and invoking it directly\nwith the subprocess module.\n  warnings.warn("
+    },
+    {
+      "probe_id": "p5",
+      "title": "Triclinic, multi-atom, crossing in +x/-y/-z: per-frame displacement must equal the physical velocity exactly",
+      "passed": false,
+      "output": "[p5] construction: |v|=6.96 max frac drift/frame=0.230 (must be <0.5)\n[p5] displaced(obs[0]->obs[-1])=[[28.226, -25.12, -31.5], [28.0, -24.5, -31.5], [27.626, -25.12, -31.5]] physical=[28.0, -24.5, -31.5]\n\n/tmp/venv-023-probe/lib/python3.12/site-packages/Bio/Application/__init__.py:39: BiopythonDeprecationWarning: The Bio.Application modules and modules relying on it have been deprecated.\n\nDue to the on going maintenance burden of keeping command line application\nwrappers up to date, we have decided to deprecate and eventually remove these\nmodules.\n\nWe instead now recommend building your command line and invoking it directly\nwith the subprocess module.\n  warnings.warn(\nTraceback (most recent call last):\n  File \"/tmp/codex-sci-verify-BgZ2Zv/.sci-probes/p5.py\", line 99, in <module>\n    assert np.allclose(offsets, np.round(offsets), atol=2e-3), (\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: unwrapped coords are not lattice images of the physical path; max fractional offset error=3.76e-01"
+    },
+    {
+      "probe_id": "p6",
+      "title": "API surface coherence: timeseries() twice, per-frame indexing, and a write->read roundtrip must agree and preserve cell metadata",
+      "passed": false,
+      "output": "/tmp/venv-023-probe/lib/python3.12/site-packages/Bio/Application/__init__.py:39: BiopythonDeprecationWarning: The Bio.Application modules and modules relying on it have been deprecated.\n\nDue to the on going maintenance burden of keeping command line application\nwrappers up to date, we have decided to deprecate and eventually remove these\nmodules.\n\nWe instead now recommend building your command line and invoking it directly\nwith the subprocess module.\n  warnings.warn(\nTraceback (most recent call last):\n  File \"/tmp/codex-sci-verify-BgZ2Zv/.sci-probes/p6.py\", line 138, in <module>\n    assert np.allclose(rep[\"roundtrip_dims\"], dims, atol=1e-3), (\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: roundtrip did not preserve per-frame cell dimensions: [[95.0, 100.0, 100.0, 90.0, 90.0, 90.0], [95.0, 100.0, 100.0, 90.0, 90.0, 90.0], [95.0, 100.0, 100.0, 90.0, 90.0, 90.0], [95.0, 100.0, 100.0, 90.0, 90.0, 90.0]]"
+    },
+    {
+      "probe_id": "p7",
+      "title": "Single-axis (x-only) cell contraction with degenerate-cell guards: the unwrapped coordinate must stay a lattice image of the physical path",
+      "passed": true,
+      "output": "[p7] singular-cell -> NoDataError (expected): NoDataError\n[p7] missing-cell -> NoDataError (expected): NoDataError\n[p7] non-sequential warning kinds=['UserWarning']\n[p7] single-frame x=[1.0, 2.0, 3.0]\n[p7] x-only shrink 100->60: x=[90.0, 90.0, 90.0] maxstep=0.000 half_min_box=30.0 warns=1\n[p7] untouched axes y,z=[[50.0, 50.0], [50.0, 50.0], [50.0, 50.0]]\n[p7] RESULT=OK\n\n/tmp/venv-023-probe/lib/python3.12/site-packages/Bio/Application/__init__.py:39: BiopythonDeprecationWarning: The Bio.Application modules and modules relying on it have been deprecated.\n\nDue to the on going maintenance burden of keeping command line application\nwrappers up to date, we have decided to deprecate and eventually remove these\nmodules.\n\nWe instead now recommend building your command line and invoking it directly\nwith the subprocess module.\n  warnings.warn("
+    }
+  ],
+  "public_ok": true,
+  "public_output": "{\n  \"cases\": {\n    \"cell_schedule_a\": {\n      \"finite\": true,\n      \"max_frame_step\": 0.0,\n      \"median_frame_step\": 0.0,\n      \"shape\": [\n        4,\n        1,\n        3\n      ],\n      \"shape_matches_input\": true,\n      \"warning_count\": 1\n    },\n    \"cell_schedule_b\": {\n      \"finite\": true,\n      \"max_frame_step\": 0.0,\n      \"median_frame_step\": 0.0,\n      \"shape\": [\n        4,\n        1,\n        3\n      ],\n      \"shape_matches_input\": true,\n      \"warning_count\": 1\n    }\n  },\n  \"offline\": true,\n  \"schema_version\": \"1.0\",\n  \"status\": \"workflow_completed\"\n}\n\n/tmp/venv-023-probe/lib/python3.12/site-packages/Bio/Application/__init__.py:39: BiopythonDeprecationWarning: The Bio.Application modules and modules relying on it have been deprecated.\n\nDue to the on going maintenance burden of keeping command line application\nwrappers up to date, we have decided to deprecate and eventually remove these\nmodules.\n\nWe instead now recommend building your command line and invoking it directly\nwith the subprocess module.\n  warnings.warn(",
+  "summary": "失败：2/7 探针未过"
+}

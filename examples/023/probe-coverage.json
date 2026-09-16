@@ -1,0 +1,23 @@
+{
+  "quotas": {
+    "main_path": 2,
+    "param_space": 1,
+    "name_variants": 1,
+    "robustness": 1,
+    "api_surface": 1
+  },
+  "reports": [
+    {
+      "role": "SciProber",
+      "legacy": false,
+      "counts": {
+        "main_path": 2,
+        "param_space": 1,
+        "name_variants": 1,
+        "robustness": 2,
+        "api_surface": 1
+      },
+      "missing": []
+    }
+  ]
+}

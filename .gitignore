@@ -16,3 +16,24 @@ node_modules/
 
 # Secrets
 .env
+
+# runtime / heavyweight artifacts (never ship)
+workspaces/
+logs/
+*.tsbuildinfo
+
+# local secrets & editors
+.env.*
+*.local
+.vscode/settings.json
+
+# os noise
+Thumbs.db
+
+# latex build noise
+*.aux
+*.pdf
+*.synctex.gz
+*.toc
+*.fls
+*.fdb_latexmk
